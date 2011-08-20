@@ -24,9 +24,22 @@ class WP_Widget_plaingCd extends WP_Widget
 
 	function form( $instance ) {
 		$instance = wp_parse_args( (array) $instance, array( 'title' => 'nowPlayingCdFromLastfm', 'userid' => '', 'apikey' => '') );
+		$title = esc_attr( $instance['title'] );
 		$userid = esc_attr( $instance['userid'] );
 		$apikey = esc_attr( $instance['apikey'] );
 		?>
+			<p>
+				<label for="<?php echo $this->get_field_id('title'); ?>">
+					<?php _e('Title'); ?>
+				</label>
+				<input
+					 type="text"
+					 name="<?php echo $this->get_field_name('title'); ?>"
+					 value="<?php echo $title; ?>"
+					 id="<?php echo $this->get_field_id('title'); ?>"
+					 class="widefat" />
+				<br />
+			</p>
 			<p>
 				<label for="<?php echo $this->get_field_id('userid'); ?>">
 					<?php _e('Userid'); ?>
@@ -56,6 +69,7 @@ class WP_Widget_plaingCd extends WP_Widget
 
 	function update( $new_instance, $old_instance ) {
 		$instance = $old_instance;
+		$instance['title'] = strip_tags($new_instance['title']);
 		$instance['userid'] = strip_tags($new_instance['userid']);
 		$instance['apikey'] = strip_tags($new_instance['apikey']);
 		return $instance;
@@ -97,16 +111,6 @@ class WP_Widget_plaingCd extends WP_Widget
 } //WP_Widget_plaingCd
 
 
-function nowPlayingCd_register_widgets() {
-	register_widget("WP_Widget_plaingCd");
-} //nowPlayingCd_register_widgets
-
-
-//Main
-require_once( WP_PLUGIN_DIR . '/' . 'lastfmapi/lastfmapi.php');
-add_action('widgets_init', 'nowPlayingCd_register_widgets');
-
-
 function user_getRecentTracks( $userid, $apikey ) {
 	$authVars['apiKey'] = $apikey;
 
@@ -134,8 +138,16 @@ function user_getRecentTracks( $userid, $apikey ) {
 	else {
 		die('<b>Error '.$userClass->error['code'].' - </b><i>'.$userClass->error['desc'].'</i>');
 	}
-
-
 } // user_getRecentTracks
+
+
+function nowPlayingCd_register_widgets() {
+	register_widget("WP_Widget_plaingCd");
+} //nowPlayingCd_register_widgets
+
+
+//Main
+require_once( WP_PLUGIN_DIR . '/' . 'lastfmapi/lastfmapi.php');
+add_action('widgets_init', 'nowPlayingCd_register_widgets');
 
 ?>
