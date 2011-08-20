@@ -74,9 +74,15 @@ class WP_Widget_plaingCd extends WP_Widget
 
 		$this->tracks = user_getRecentTracks($userid, $apikey);
 		$album = $this->tracks[0]['album']['name'];
+		if ($this->tracks[0]['images']['large'] != '')
+		{
+			$image = $this->tracks[0]['images']['large'];
+		} else {
+			$image = WP_PLUGIN_URL . '/nowPlayingCd/noimg.png';
+		}
 
 		echo '<div id="nowPlayingCdFromLastfm">';
-		echo '<img src="' . $this->tracks[0]['images']['large'] . '" border="0" alt="' . $album . '" title="' . $album . '" />';
+		echo '<img src="' . $image . '" border="0" alt="' . $album . '" title="' . $album . '" />';
 		echo '<p>' . $this->tracks[0]['artist']['name'] . '</p>';
 		echo '<p>' . $album . '</p>';
 		echo '</div>';
