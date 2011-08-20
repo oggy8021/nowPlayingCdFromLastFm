@@ -14,12 +14,12 @@ class WP_Widget_plaingCd extends WP_Widget
 	public $tracks = '';
 
 	function WP_Widget_plaingCd() {
-//		$widget_ops = array(
-//			'classname' => 'WP_Widget_plaingCd',
-//			'description' => 'nowPlaying CD from Last.fm'
-//		);
-//		parent::WP_Widget(false, $name='nowPlayingCdFromLastfm' ,$widget_ops);
-		parent::WP_Widget(false, $name='nowPlayingCdFromLastfm');
+		$widget_ops = array(
+			'classname' => 'WP_Widget_plaingCd',
+			'description' => 'nowPlaying CD from Last.fm'
+		);
+		parent::WP_Widget(false, $name='nowPlayingCdFromLastfm' ,$widget_ops);
+//		parent::WP_Widget(false, $name='nowPlayingCdFromLastfm');
 	}
 
 	function form( $instance ) {
@@ -72,9 +72,10 @@ class WP_Widget_plaingCd extends WP_Widget
 		if ( $title )
 			echo $before_title . $title . $after_title;
 
-		echo '<div id="nowPlayingCdFromLastfm">';
 		$this->tracks = user_getRecentTracks($userid, $apikey);
 		$album = $this->tracks[0]['album']['name'];
+
+		echo '<div id="nowPlayingCdFromLastfm">';
 		echo '<img src="' . $this->tracks[0]['images']['large'] . '" border="0" alt="' . $album . '" title="' . $album . '" />';
 		echo '<p>' . $this->tracks[0]['artist']['name'] . '</p>';
 		echo '<p>' . $album . '</p>';
