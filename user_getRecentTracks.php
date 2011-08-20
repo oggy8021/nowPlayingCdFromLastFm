@@ -1,7 +1,7 @@
 <?php
 
 // Include the API
-require '../lastfmapi/lastfmapi.php';
+require '../../lastfmapi/lastfmapi.php';
 
 $authVars['apiKey'] = '';
 
@@ -24,10 +24,10 @@ $methodVars = array(
 );
 
 if ( $tracks = $userClass->getRecentTracks($methodVars) ) {
-	echo '<b>Data Returned</b>';
-	echo '<pre>';
-	print_r($tracks);
-	echo '</pre>';
+	$album = $tracks[0]['album']['name'];
+	echo '<img src="' . $tracks[0]['images']['large'] . '" border="0" alt="' . $album . '" title="' . $album . '" />';
+	echo '<p>' . $tracks[0]['artist']['name'] . '</p>';
+	echo '<p>' . $album . '</p>';
 }
 else {
 	die('<b>Error '.$userClass->error['code'].' - </b><i>'.$userClass->error['desc'].'</i>');
