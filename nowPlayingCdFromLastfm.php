@@ -4,7 +4,7 @@
 	Plugin Name: nowPlayingCdFromLastfm
 	Plugin URI: http://oggy.no-ip.info/blog/
 	Description: Last.fm -> user.getRecentTracks
-	Version: 1.1
+	Version: 1.2
 	Author: oggy
 	Author URI: http://oggy.no-ip.info/blog/
  */
@@ -22,7 +22,6 @@ class WP_Widget_plaingCd extends WP_Widget
 			'description' => 'nowPlaying CD from Last.fm'
 		);
 		parent::WP_Widget(false, $name='nowPlayingCdFromLastfm' ,$widget_ops);
-//		parent::WP_Widget(false, $name='nowPlayingCdFromLastfm');
 	}
 
 	function form( $instance ) {
@@ -143,24 +142,36 @@ function user_getRecentTracks( $userid, $apikey ) {
 } // user_getRecentTracks
 
 
-class WP_Widget_recentRelease extends WP_Widget
+class WP_Widget_recentReleaseCd extends WP_Widget
 {
-	function WP_Widget_recentRelease() {
+	function WP_Widget_recentReleaseCd() {
 		$widget_ops = array(
-			'classname' => 'WP_Widget_recentRelease',
+			'classname' => 'WP_Widget_recentReleaseCd',
 			'description' => 'This Artist Recent Release CD'
 		);
-		parent::WP_Widget(false, $name='recentRelease' ,$widget_ops);
-//		parent::WP_Widget(false, $name='recentRelease');
+		parent::WP_Widget(false, $name='recentReleaseCd' ,$widget_ops);
 	}
 
 	function form( $instance ) {
-		$instance = wp_parse_args( (array) $instance, array( 'title' => 'recentRelease', 'diskCount' => 1 ) );
+		$instance = wp_parse_args( (array) $instance, array( 'title' => 'recentReleaseCd', 'diskCount' => 1 ) );
+		$title = esc_attr( $instance['title'] );
 		$diskCount = esc_attr( $instance['diskCount'] );
 		?>
 			<p>
+				<label for="<?php echo $this->get_field_id('title'); ?>">
+					<?php _e('Title'); ?>
+				</label>
+				<input
+					 type="text"
+					 name="<?php echo $this->get_field_name('title'); ?>"
+					 value="<?php echo $title; ?>"
+					 id="<?php echo $this->get_field_id('title'); ?>"
+					 class="widefat" />
+				<br />
+			</p>
+			<p>
 				<label for="<?php echo $this->get_field_id('diskCount'); ?>">
-					<?php __('diskCount'); ?>
+					<?php _e('DiskCount'); ?>
 				</label>
 				<input
 					 type="text"
@@ -189,11 +200,14 @@ class WP_Widget_recentRelease extends WP_Widget
 		if ( $title )
 			echo $before_title . $title . $after_title;
 
-		$this->tracks = user_getRecentTracks($userid, $apikey);
-		$album = $tracks[0]['album']['name'];
+//		$tracks = WP_Widget_playingCd::tracks;
+//		$artist = $tracks[0]['artist']['name'];
+//		$artist = WP_Widget_playingCd::getArtist();
+		$artist = 'JiLL-Decoy Association';
 
 		echo '<div id="recentRelease">';
-		$ret = MusicItemSearch( $artist, $diskCount );
+		echo '<p>' . $artist . '</p>';
+		echo MusicItemSearch( $artist, $diskCount );
 		echo '</div>';
 
 		echo $after_widget;
@@ -207,12 +221,14 @@ function MusicItemSearch($artist, $listed)
 	$noimgUrl = WP_PLUGIN_URL . '/nowPlayingCd/noimg.png';
 
 	$pas = new AmazonPAS();
-	$pas->set_locale(AmazonPAS::LOCALE_JAPAN);
+//	$pas->set_locale(AmazonPAS::LOCALE_JAPAN);	// AWSSDKforPHP
+	$pas->set_locale(PAS_LOCALE_JAPAN);	// cloudfusion
 	$opt['ResponseGroup'] = 'Images,ItemAttributes';
 	$opt['Sort'] = '-releasedate';
 	$opt['SearchIndex'] = 'Music';
 	$opt['Artist'] = (String)$artist;
-	$res = $pas->item_search((String)$artist, $opt, AmazonPAS::LOCALE_JAPAN);
+//	$res = $pas->item_search((String)$artist, $opt, AmazonPAS::LOCALE_JAPAN);	// AWSSDKforPHP
+	$res = $pas->item_search((String)$artist, $opt, PAS_LOCALE_JAPAN);	// cloudfusion
 
 	$getItems =& $res->body->Items->Item;
 	$getItemCnt = count($getItems);
@@ -254,9 +270,14 @@ function nowPlayingCd_register_widgets() {
 	register_widget("WP_Widget_plaingCd");
 } //nowPlayingCd_register_widgets
 
+function recentReleaseCd_register_widgets() {
+	register_widget("WP_Widget_recentReleaseCd");
+} //recentReleaseCd_register_widgets
+
 
 //Main
 require_once( WP_PLUGIN_DIR . '/' . 'lastfmapi/lastfmapi.php');
 add_action('widgets_init', 'nowPlayingCd_register_widgets');
+add_action('widgets_init', 'recentReleaseCd_register_widgets');
 
 ?>
