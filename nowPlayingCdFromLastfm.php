@@ -11,17 +11,19 @@
 
 //require_once 'AWSSDKforPHP/sdk.class.php';	// AWSSDKforPHP
 require_once('/usr/lib/php/modules/cloudfusion/cloudfusion.class.php');	// cloudfusion
+require_once( WP_PLUGIN_DIR . '/' . 'lastfmapi/lastfmapi.php');
+require_once 'user_getRecentTracks.php';
+require_once 'debuggy.php';
 
 class WP_Widget_plaingCd extends WP_Widget
 {
-	public $tracks = '';
-
-	function WP_Widget_plaingCd() {
+//	function __construct( $lastfmobj ) {
+	function __construct() {
 		$widget_ops = array(
 			'classname' => 'WP_Widget_plaingCd',
 			'description' => 'nowPlaying CD from Last.fm'
 		);
-		parent::WP_Widget(false, $name='nowPlayingCdFromLastfm' ,$widget_ops);
+		parent::__construct('playingcd', $name='nowPlayingCdFromLastfm' ,$widget_ops);
 	}
 
 	function form( $instance ) {
@@ -82,12 +84,17 @@ class WP_Widget_plaingCd extends WP_Widget
 		$title = apply_filters('widget_title', $instance['title']);
 		$userid = apply_filters('widget_title', $instance['userid']);
 		$apikey = apply_filters('widget_title', $instance['apikey']);
+//		$lastfmobj = apply_filters('widget_title', $instance['lastfmobj']);
 
 		echo $before_widget;
 		if ( $title )
 			echo $before_title . $title . $after_title;
 
-		$this->tracks = user_getRecentTracks($userid, $apikey);
+		$this->tracks = user_getRecentTracks2($userid, $apikey);
+//		$lastfmobj->setUserRecentTracks( $userid, $apikey );
+//		$tracks2 =  $lastfmobj->getUserRecentTracks();
+//		$artist2 = $track2[0]['artist']['name'];
+
 		$album = $this->tracks[0]['album']['name'];
 		if ( '' != $this->tracks[0]['images']['large'] )
 		{
@@ -100,19 +107,16 @@ class WP_Widget_plaingCd extends WP_Widget
 		echo '<img src="' . $image . '" border="0" alt="' . $album . '" title="' . $album . '" />';
 		echo '<p>' . $this->tracks[0]['artist']['name'] . '</p>';
 		echo '<p>' . $album . '</p>';
+//		echo '<p>' . $artist2 . '</p>';
 		echo '</div>';
 
 		echo $after_widget;
 	} //widget
 
-	function getArtist() {
-		return $this->tracks[0]['artist']['name'];
-	}
-
 } //WP_Widget_plaingCd
 
 
-function user_getRecentTracks( $userid, $apikey ) {
+function user_getRecentTracks2( $userid, $apikey ) {
 	$authVars['apiKey'] = $apikey;
 
 	$config = array(
@@ -139,17 +143,17 @@ function user_getRecentTracks( $userid, $apikey ) {
 	else {
 		die('<b>Error '.$userClass->error['code'].' - </b><i>'.$userClass->error['desc'].'</i>');
 	}
-} // user_getRecentTracks
+} // user_getRecentTracks2
 
 
 class WP_Widget_recentReleaseCd extends WP_Widget
 {
-	function WP_Widget_recentReleaseCd() {
+	function __construct() {
 		$widget_ops = array(
 			'classname' => 'WP_Widget_recentReleaseCd',
 			'description' => 'This Artist Recent Release CD'
 		);
-		parent::WP_Widget(false, $name='recentReleaseCd' ,$widget_ops);
+		parent::__construct('recentreleasecd', $name='recentReleaseCd' ,$widget_ops);
 	}
 
 	function form( $instance ) {
@@ -200,9 +204,6 @@ class WP_Widget_recentReleaseCd extends WP_Widget
 		if ( $title )
 			echo $before_title . $title . $after_title;
 
-//		$tracks = WP_Widget_playingCd::tracks;
-//		$artist = $tracks[0]['artist']['name'];
-//		$artist = WP_Widget_playingCd::getArtist();
 		$artist = 'JiLL-Decoy Association';
 
 		echo '<div id="recentRelease">';
@@ -265,10 +266,11 @@ function MusicItemSearch($artist, $listed)
 
 }//MusicItemSearch
 
-
+//function nowPlayingCd_register_widgets( $lastfmobj ) {
 function nowPlayingCd_register_widgets() {
 	register_widget("WP_Widget_plaingCd");
 } //nowPlayingCd_register_widgets
+
 
 function recentReleaseCd_register_widgets() {
 	register_widget("WP_Widget_recentReleaseCd");
@@ -276,7 +278,8 @@ function recentReleaseCd_register_widgets() {
 
 
 //Main
-require_once( WP_PLUGIN_DIR . '/' . 'lastfmapi/lastfmapi.php');
+$lastfmobj = new user_getRecentTracks();
+//add_action('widgets_init', 'nowPlayingCd_register_widgets', 10, $lastfmobj);
 add_action('widgets_init', 'nowPlayingCd_register_widgets');
 add_action('widgets_init', 'recentReleaseCd_register_widgets');
 
