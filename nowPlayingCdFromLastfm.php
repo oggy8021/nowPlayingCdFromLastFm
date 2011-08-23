@@ -12,12 +12,10 @@
 //require_once 'AWSSDKforPHP/sdk.class.php';	// AWSSDKforPHP
 require_once('/usr/lib/php/modules/cloudfusion/cloudfusion.class.php');	// cloudfusion
 require_once( WP_PLUGIN_DIR . '/' . 'lastfmapi/lastfmapi.php');
-require_once 'user_getRecentTracks.php';
 require_once 'debuggy.php';
 
 class WP_Widget_plaingCd extends WP_Widget
 {
-//	function __construct( $lastfmobj ) {
 	function __construct() {
 		$widget_ops = array(
 			'classname' => 'WP_Widget_plaingCd',
@@ -84,16 +82,12 @@ class WP_Widget_plaingCd extends WP_Widget
 		$title = apply_filters('widget_title', $instance['title']);
 		$userid = apply_filters('widget_title', $instance['userid']);
 		$apikey = apply_filters('widget_title', $instance['apikey']);
-//		$lastfmobj = apply_filters('widget_title', $instance['lastfmobj']);
 
 		echo $before_widget;
 		if ( $title )
 			echo $before_title . $title . $after_title;
 
-		$this->tracks = user_getRecentTracks2($userid, $apikey);
-//		$lastfmobj->setUserRecentTracks( $userid, $apikey );
-//		$tracks2 =  $lastfmobj->getUserRecentTracks();
-//		$artist2 = $track2[0]['artist']['name'];
+		$this->tracks = user_getRecentTracks($userid, $apikey);
 
 		$album = $this->tracks[0]['album']['name'];
 		if ( '' != $this->tracks[0]['images']['large'] )
@@ -102,21 +96,22 @@ class WP_Widget_plaingCd extends WP_Widget
 		} else {
 			$image = WP_PLUGIN_URL . '/nowPlayingCd/noimg.png';
 		}
+		$artist = $this->tracks[0]['artist']['name'];
 
 		echo '<div id="nowPlayingCdFromLastfm">';
 		echo '<img src="' . $image . '" border="0" alt="' . $album . '" title="' . $album . '" />';
-		echo '<p>' . $this->tracks[0]['artist']['name'] . '</p>';
+		echo '<p>' . $artist . '</p>';
 		echo '<p>' . $album . '</p>';
-//		echo '<p>' . $artist2 . '</p>';
 		echo '</div>';
 
 		echo $after_widget;
+
 	} //widget
 
 } //WP_Widget_plaingCd
 
 
-function user_getRecentTracks2( $userid, $apikey ) {
+function user_getRecentTracks( $userid, $apikey ) {
 	$authVars['apiKey'] = $apikey;
 
 	$config = array(
@@ -143,7 +138,7 @@ function user_getRecentTracks2( $userid, $apikey ) {
 	else {
 		die('<b>Error '.$userClass->error['code'].' - </b><i>'.$userClass->error['desc'].'</i>');
 	}
-} // user_getRecentTracks2
+} // user_getRecentTracks
 
 
 class WP_Widget_recentReleaseCd extends WP_Widget
@@ -266,7 +261,49 @@ function MusicItemSearch($artist, $listed)
 
 }//MusicItemSearch
 
-//function nowPlayingCd_register_widgets( $lastfmobj ) {
+
+function nowPlayingFromLastfm_menu() {
+	add_options_page('nowPlayingFromLastfm', 'Last.fmアクセス', 8, __FILE__, 'nowPlayingFromLastfm_options');
+} //nowPlayingFromLastfm_menu
+
+
+function nowPlayingFromLastfm_options() {
+
+?>
+<div class="wrap">
+	<h2>nowPlaying From Last.fm</h2>
+
+	<form method="post" action="options.php">
+		<?php wp_nonce_field('update-options'); ?>
+
+		<p>userid:
+			<input
+				 type="text"
+				 name="userid"
+				 value="<?php echo get_option('userid'); ?>" />
+			<br />
+		</p>
+		<p>apikey:
+			<input
+				 type="text"
+				 name="apikey"
+				 value="<?php echo get_option('apikey') ?>" />
+			<br />
+		</p>
+
+		<input type="hidden" name="action" value="update" />
+		<input type="hidden" name="page_options" value="userid,apikey" />
+
+	    <p class="submit">
+	    <input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
+	    </p>
+	 
+	</form>
+</div>
+<?php
+} //nowPlayingFromLastfm_options
+
+
 function nowPlayingCd_register_widgets() {
 	register_widget("WP_Widget_plaingCd");
 } //nowPlayingCd_register_widgets
@@ -278,8 +315,7 @@ function recentReleaseCd_register_widgets() {
 
 
 //Main
-$lastfmobj = new user_getRecentTracks();
-//add_action('widgets_init', 'nowPlayingCd_register_widgets', 10, $lastfmobj);
+add_action('admin_menu', 'nowPlayingFromLastfm_menu');
 add_action('widgets_init', 'nowPlayingCd_register_widgets');
 add_action('widgets_init', 'recentReleaseCd_register_widgets');
 
