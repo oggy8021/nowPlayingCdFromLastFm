@@ -14,11 +14,11 @@ require_once('/usr/lib/php/modules/cloudfusion/cloudfusion.class.php');	// cloud
 require_once( WP_PLUGIN_DIR . '/' . 'lastfmapi/lastfmapi.php');
 require_once 'debuggy.php';
 
-class WP_Widget_plaingCd extends WP_Widget
+class WP_Widget_playingCd extends WP_Widget
 {
 	function __construct() {
 		$widget_ops = array(
-			'classname' => 'WP_Widget_plaingCd',
+			'classname' => 'WP_Widget_playingCd',
 			'description' => 'nowPlaying CD from Last.fm'
 		);
 		parent::__construct('playingcd', $name='nowPlayingCdFromLastfm' ,$widget_ops);
@@ -98,17 +98,21 @@ class WP_Widget_plaingCd extends WP_Widget
 		}
 		$artist = $this->tracks[0]['artist']['name'];
 
+		$playingcd_settings = $this->get_settings();
+
 		echo '<div id="nowPlayingCdFromLastfm">';
 		echo '<img src="' . $image . '" border="0" alt="' . $album . '" title="' . $album . '" />';
 		echo '<p>' . $artist . '</p>';
 		echo '<p>' . $album . '</p>';
+//		echo '<p>' . var_dump($playingcd_settings) . '</p>';
+		echo '<p>' . $playingcd_settings[3]['title'] . '</p>';
 		echo '</div>';
 
 		echo $after_widget;
 
 	} //widget
 
-} //WP_Widget_plaingCd
+} //WP_Widget_playingCd
 
 
 function user_getRecentTracks( $userid, $apikey ) {
@@ -305,7 +309,7 @@ function nowPlayingFromLastfm_options() {
 
 
 function nowPlayingCd_register_widgets() {
-	register_widget("WP_Widget_plaingCd");
+	register_widget("WP_Widget_playingCd");
 } //nowPlayingCd_register_widgets
 
 
