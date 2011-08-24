@@ -87,7 +87,8 @@ class WP_Widget_playingCd extends WP_Widget
 		if ( $title )
 			echo $before_title . $title . $after_title;
 
-		$this->tracks = user_getRecentTracks($userid, $apikey);
+//		$this->tracks = user_getRecentTracks($userid, $apikey);
+		$this->tracks = driver_getRecentTracks($userid, $apikey);
 
 		$album = $this->tracks[0]['album']['name'];
 		if ( '' != $this->tracks[0]['images']['large'] )
@@ -113,6 +114,32 @@ class WP_Widget_playingCd extends WP_Widget
 	} //widget
 
 } //WP_Widget_playingCd
+
+
+function driver_getRecentTracks( $userid, $apikey ) {
+	$tracks = array(
+		0 => array(
+			"name" => "アイロニー", 
+			"artist" => array(
+				"name" => "Jill-Decoy Association"
+				), 
+			"album" => array(
+				"name" => "ジルデコ"
+				),
+			"images" => array(
+				"large" => ""
+				)
+		)
+	);
+	return $tracks;
+
+} // driver_getRecentTracks
+
+
+function driver_MusicItemSearch($artist, $listed)
+{
+	return "driver Code";
+} // MusicItemSearch
 
 
 function user_getRecentTracks( $userid, $apikey ) {
@@ -207,7 +234,8 @@ class WP_Widget_recentReleaseCd extends WP_Widget
 
 		echo '<div id="recentRelease">';
 		echo '<p>' . $artist . '</p>';
-		echo MusicItemSearch( $artist, $diskCount );
+//		echo MusicItemSearch( $artist, $diskCount );
+		echo driver_MusicItemSearch( $artist, $diskCount );
 		echo '</div>';
 
 		echo $after_widget;
