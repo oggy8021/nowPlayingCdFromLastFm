@@ -27,8 +27,10 @@ class WP_Widget_playingCd extends WP_Widget
 	function form( $instance ) {
 		$instance = wp_parse_args( (array) $instance, array( 'title' => 'nowPlayingCdFromLastfm', 'userid' => '', 'apikey' => '') );
 		$title = esc_attr( $instance['title'] );
-		$userid = esc_attr( $instance['userid'] );
-		$apikey = esc_attr( $instance['apikey'] );
+//		$userid = esc_attr( $instance['userid'] );
+		$userid = get_option('widget_nowplayingcdfromlastfm_userid');
+//		$apikey = esc_attr( $instance['apikey'] );
+		$apikey = get_option('widget_nowplayingcdfromlastfm_apikey');
 		?>
 			<p>
 				<label for="<?php echo $this->get_field_id('title'); ?>">
@@ -42,46 +44,22 @@ class WP_Widget_playingCd extends WP_Widget
 					 class="widefat" />
 				<br />
 			</p>
-			<p>
-				<label for="<?php echo $this->get_field_id('userid'); ?>">
-					<?php _e('Userid'); ?>
-				</label>
-				<input
-					 type="text"
-					 name="<?php echo $this->get_field_name('userid'); ?>"
-					 value="<?php echo $userid; ?>"
-					 id="<?php echo $this->get_field_id('userid'); ?>"
-					 class="widefat" />
-				<br />
-			</p>
-			<p>
-				<label for="<?php echo $this->get_field_id('apikey'); ?>">
-					<?php _e('Apikey'); ?>
-				</label>
-				<input
-					 type="text"
-					 name="<?php echo $this->get_field_name('apikey'); ?>"
-					 value="<?php echo $apikey; ?>"
-					 id="<?php echo $this->get_field_id('apikey'); ?>"
-					 class="widefat" />
-				<br />
-			</p>
 		<?php
 	} //form
 
 	function update( $new_instance, $old_instance ) {
 		$instance = $old_instance;
 		$instance['title'] = strip_tags($new_instance['title']);
-		$instance['userid'] = strip_tags($new_instance['userid']);
-		$instance['apikey'] = strip_tags($new_instance['apikey']);
 		return $instance;
 	} //update
 
 	function widget( $args, $instance ) {
 		extract( $args );
 		$title = apply_filters('widget_title', $instance['title']);
-		$userid = apply_filters('widget_title', $instance['userid']);
-		$apikey = apply_filters('widget_title', $instance['apikey']);
+//		$userid = apply_filters('widget_title', $instance['userid']);
+		$userid = get_option('widget_nowplayingcdfromlastfm_userid');
+//		$apikey = apply_filters('widget_title', $instance['apikey']);
+		$apikey = get_option('widget_nowplayingcdfromlastfm_apikey');
 
 		echo $before_widget;
 		if ( $title )
