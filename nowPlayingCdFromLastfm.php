@@ -99,14 +99,20 @@ class WP_Widget_playingCd extends WP_Widget
 		}
 		$artist = $this->tracks[0]['artist']['name'];
 
-		$playingcd_settings = $this->get_settings();
+		if ( $getArtist = get_option('widget_' . $this->id_base .'RecentTrackArtist') ) {
+			update_option('widget_' . $this->id_base .'RecentTrackArtist', $artist);
+		} else {
+			add_option('widget_' . $this->id_base .'RecentTrackArtist', $artist);
+		}
+
+		$sets = $this->get_settings();
 
 		echo '<div id="nowPlayingCdFromLastfm">';
 		echo '<img src="' . $image . '" border="0" alt="' . $album . '" title="' . $album . '" />';
 		echo '<p>' . $artist . '</p>';
 		echo '<p>' . $album . '</p>';
-//		echo '<p>' . var_dump($playingcd_settings) . '</p>';
-		echo '<p>' . $playingcd_settings[3]['title'] . '</p>';
+		echo '<p>[' . $getArtist . ']</p>';
+//		echo var_export ($sets);
 		echo '</div>';
 
 		echo $after_widget;
@@ -138,8 +144,13 @@ function driver_getRecentTracks( $userid, $apikey ) {
 
 function driver_MusicItemSearch($artist, $listed)
 {
-	return "driver Code";
-} // MusicItemSearch
+	if ( $getArtist = get_option('widget_' . $this->id_base .'RecentTrackArtist') ) {
+		return '<p>[' . $getArtist . ']</p>';
+	} else {
+		return "driver Code";
+	}
+
+} // driver_MusicItemSearch
 
 
 function user_getRecentTracks( $userid, $apikey ) {
@@ -295,7 +306,7 @@ function MusicItemSearch($artist, $listed)
 
 
 function nowPlayingFromLastfm_menu() {
-	add_options_page('nowPlayingFromLastfm', 'Last.fmアクセス', 8, __FILE__, 'nowPlayingFromLastfm_options');
+	add_options_page('nowPlayingFromLastfm', 'nowPlaying CD From Last.fm settings', 8, __FILE__, 'nowPlayingFromLastfm_options');
 } //nowPlayingFromLastfm_menu
 
 
@@ -303,7 +314,7 @@ function nowPlayingFromLastfm_options() {
 
 ?>
 <div class="wrap">
-	<h2>nowPlaying From Last.fm</h2>
+	<h2>nowPlaying CD From Last.fm</h2>
 
 	<form method="post" action="options.php">
 		<?php wp_nonce_field('update-options'); ?>
@@ -311,20 +322,20 @@ function nowPlayingFromLastfm_options() {
 		<p>userid:
 			<input
 				 type="text"
-				 name="userid"
-				 value="<?php echo get_option('userid'); ?>" />
+				 name="widget_nowplayingcdfromlastfm_userid"
+				 value="<?php echo get_option('widget_nowplayingcdfromlastfm_userid'); ?>" />
 			<br />
 		</p>
 		<p>apikey:
 			<input
 				 type="text"
-				 name="apikey"
-				 value="<?php echo get_option('apikey') ?>" />
+				 name="widget_nowplayingcdfromlastfm_apikey"
+				 value="<?php echo get_option('widget_nowplayingcdfromlastfm_apikey') ?>" />
 			<br />
 		</p>
 
 		<input type="hidden" name="action" value="update" />
-		<input type="hidden" name="page_options" value="userid,apikey" />
+		<input type="hidden" name="page_options" value="widget_nowplayingcdfromlastfm_userid,widget_nowplayingcdfromlastfm_apikey" />
 
 	    <p class="submit">
 	    <input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
