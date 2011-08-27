@@ -4,7 +4,7 @@
 	Plugin Name: nowPlayingCdFromLastfm
 	Plugin URI: http://oggy.no-ip.info/blog/
 	Description: Last.fm -> user.getRecentTracks
-	Version: 1.2
+	Version: 1.3
 	Author: oggy
 	Author URI: http://oggy.no-ip.info/blog/
  */
@@ -27,9 +27,7 @@ class WP_Widget_playingCd extends WP_Widget
 	function form( $instance ) {
 		$instance = wp_parse_args( (array) $instance, array( 'title' => 'nowPlayingCdFromLastfm', 'userid' => '', 'apikey' => '') );
 		$title = esc_attr( $instance['title'] );
-//		$userid = esc_attr( $instance['userid'] );
 		$userid = get_option('widget_nowplayingcdfromlastfm_userid');
-//		$apikey = esc_attr( $instance['apikey'] );
 		$apikey = get_option('widget_nowplayingcdfromlastfm_apikey');
 		?>
 			<p>
@@ -56,9 +54,7 @@ class WP_Widget_playingCd extends WP_Widget
 	function widget( $args, $instance ) {
 		extract( $args );
 		$title = apply_filters('widget_title', $instance['title']);
-//		$userid = apply_filters('widget_title', $instance['userid']);
 		$userid = get_option('widget_nowplayingcdfromlastfm_userid');
-//		$apikey = apply_filters('widget_title', $instance['apikey']);
 		$apikey = get_option('widget_nowplayingcdfromlastfm_apikey');
 
 		echo $before_widget;
@@ -90,9 +86,7 @@ class WP_Widget_playingCd extends WP_Widget
 		echo '<p>' . $artist . '</p>';
 		echo '<p>' . $album . '</p>';
 		echo '<p>[' . $getArtist . ']</p>';
-//		echo var_export ($sets);
 		echo '</div>';
-
 		echo $after_widget;
 
 	} //widget
@@ -122,11 +116,7 @@ function driver_getRecentTracks( $userid, $apikey ) {
 
 function driver_MusicItemSearch($artist, $listed)
 {
-	if ( $getArtist = get_option('widget_' . $this->id_base .'RecentTrackArtist') ) {
-		return '<p>[' . $getArtist . ']</p>';
-	} else {
-		return "driver Code";
-	}
+	return "driver Code";
 
 } // driver_MusicItemSearch
 
@@ -219,7 +209,10 @@ class WP_Widget_recentReleaseCd extends WP_Widget
 		if ( $title )
 			echo $before_title . $title . $after_title;
 
-		$artist = 'JiLL-Decoy Association';
+//		if (! $artist = get_option('widget_' . $this->id_base .'RecentTrackArtist') ) {
+		if (! $artist = get_option('widget_playingcdRecentTrackArtist') ) {
+			$artist = 'test artist';
+		}
 
 		echo '<div id="recentRelease">';
 		echo '<p>' . $artist . '</p>';
