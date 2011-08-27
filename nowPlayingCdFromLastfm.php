@@ -4,7 +4,7 @@
 	Plugin Name: nowPlayingCdFromLastfm
 	Plugin URI: http://oggy.no-ip.info/blog/
 	Description: Last.fm -> user.getRecentTracks
-	Version: 1.3
+	Version: 1.4
 	Author: oggy
 	Author URI: http://oggy.no-ip.info/blog/
  */
@@ -27,8 +27,13 @@ class WP_Widget_playingCd extends WP_Widget
 	function form( $instance ) {
 		$instance = wp_parse_args( (array) $instance, array( 'title' => 'nowPlayingCdFromLastfm', 'userid' => '', 'apikey' => '') );
 		$title = esc_attr( $instance['title'] );
+		$imagesize = apply_filters('widget_title', $instance['imagesize']);
 		$userid = get_option('widget_nowplayingcdfromlastfm_userid');
 		$apikey = get_option('widget_nowplayingcdfromlastfm_apikey');
+
+		$sizelist = array('large', 'medium', 'small');
+		$imagesize = $sizelist["$imagesize"];
+
 		?>
 			<p>
 				<label for="<?php echo $this->get_field_id('title'); ?>">
@@ -42,20 +47,38 @@ class WP_Widget_playingCd extends WP_Widget
 					 class="widefat" />
 				<br />
 			</p>
+			<p>
+				<label for="<?php echo $this->get_field_id('imagesize'); ?>">
+					<?php _e('Image Size'); ?>
+				</label><BR />
+				<select id="<?php echo $this->get_field_id('imagesize'); ?>" name="<?php echo $this->get_field_name('imagesize'); ?>">
+					<?php 
+						foreach ($sizelist as $size) {
+							$selected = ($size == $imagesize) ? 'selected="selected"' : '';
+							echo '<option ' . $selected .' value="' . $size . '">' . $size . '</option>';
+						}
+					?>
+				</select>
+			</p>
 		<?php
 	} //form
 
 	function update( $new_instance, $old_instance ) {
 		$instance = $old_instance;
 		$instance['title'] = strip_tags($new_instance['title']);
+		$instance['imagesize'] = (int) $new_instance['imagesize'];
 		return $instance;
 	} //update
 
 	function widget( $args, $instance ) {
 		extract( $args );
 		$title = apply_filters('widget_title', $instance['title']);
+		$imagesize = apply_filters('widget_title', $instance['imagesize']);
 		$userid = get_option('widget_nowplayingcdfromlastfm_userid');
 		$apikey = get_option('widget_nowplayingcdfromlastfm_apikey');
+
+		$sizelist = array('large', 'medium', 'small');
+		$imagesize = $sizelist["$imagesize"];
 
 		echo $before_widget;
 		if ( $title )
@@ -65,9 +88,9 @@ class WP_Widget_playingCd extends WP_Widget
 		$this->tracks = driver_getRecentTracks($userid, $apikey);
 
 		$album = $this->tracks[0]['album']['name'];
-		if ( '' != $this->tracks[0]['images']['large'] )
+		if ( '' != $this->tracks[0]['images']["$imagesize"] )
 		{
-			$image = $this->tracks[0]['images']['large'];
+			$image = $this->tracks[0]['images']["$imagesize"];
 		} else {
 			$image = WP_PLUGIN_URL . '/nowPlayingCd/noimg.png';
 		}
@@ -80,7 +103,6 @@ class WP_Widget_playingCd extends WP_Widget
 		}
 
 		$sets = $this->get_settings();
-
 		echo '<div id="nowPlayingCdFromLastfm">';
 		echo '<img src="' . $image . '" border="0" alt="' . $album . '" title="' . $album . '" />';
 		echo '<p>' . $artist . '</p>';
