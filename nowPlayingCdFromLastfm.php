@@ -9,8 +9,7 @@
 	Author URI: http://oggy.no-ip.info/blog/
  */
 
-//require_once 'AWSSDKforPHP/sdk.class.php';	// AWSSDKforPHP
-require_once('/usr/lib/php/modules/cloudfusion/cloudfusion.class.php');	// cloudfusion
+require_once 'AWSSDKforPHP/sdk.class.php';	// AWSSDKforPHP
 require_once( WP_PLUGIN_DIR . '/' . 'lastfmapi/lastfmapi.php');
 
 class WP_Widget_playingCd extends WP_Widget
@@ -273,14 +272,12 @@ function MusicItemSearch($artist, $listed)
 	$noimgUrl = WP_PLUGIN_URL . '/nowPlayingCd/noimg.png';
 
 	$pas = new AmazonPAS();
-//	$pas->set_locale(AmazonPAS::LOCALE_JAPAN);	// AWSSDKforPHP
-	$pas->set_locale(PAS_LOCALE_JAPAN);	// cloudfusion
+	$pas->set_locale(AmazonPAS::LOCALE_JAPAN);	// AWSSDKforPHP
 	$opt['ResponseGroup'] = 'Images,ItemAttributes';
 	$opt['Sort'] = '-releasedate';
 	$opt['SearchIndex'] = 'Music';
 	$opt['Artist'] = (String)$artist;
-//	$res = $pas->item_search((String)$artist, $opt, AmazonPAS::LOCALE_JAPAN);	// AWSSDKforPHP
-	$res = $pas->item_search((String)$artist, $opt, PAS_LOCALE_JAPAN);	// cloudfusion
+	$res = $pas->item_search((String)$artist, $opt, AmazonPAS::LOCALE_JAPAN);	// AWSSDKforPHP
 
 	$getItems =& $res->body->Items->Item;
 	$getItemCnt = count($getItems);
