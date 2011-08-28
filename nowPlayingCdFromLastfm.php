@@ -12,7 +12,6 @@
 //require_once 'AWSSDKforPHP/sdk.class.php';	// AWSSDKforPHP
 require_once('/usr/lib/php/modules/cloudfusion/cloudfusion.class.php');	// cloudfusion
 require_once( WP_PLUGIN_DIR . '/' . 'lastfmapi/lastfmapi.php');
-require_once 'debuggy.php';
 
 class WP_Widget_playingCd extends WP_Widget
 {
@@ -109,26 +108,6 @@ class WP_Widget_playingCd extends WP_Widget
 	} //widget
 
 } //WP_Widget_playingCd
-
-
-function driver_getRecentTracks( $userid, $apikey ) {
-	$tracks = array(
-		0 => array(
-			"name" => "アイロニー", 
-			"artist" => array(
-				"name" => "Jill-Decoy Association"
-				), 
-			"album" => array(
-				"name" => "ジルデコ"
-				),
-			"images" => array(
-				"large" => ""
-				)
-		)
-	);
-	return $tracks;
-
-} // driver_getRecentTracks
 
 
 function user_getRecentTracks( $userid, $apikey ) {
@@ -287,17 +266,6 @@ class WP_Widget_recentReleaseCd extends WP_Widget
 	} //widget
 
 } //WP_Widget_recentRelease
-
-
-function driver_MusicItemSearch($artist, $listed)
-{
-	if ('test artist' == $artist) {
-		return "driver Code";
-	} else {
-		return $artist . '-' . $listed;
-	}
-
-} // driver_MusicItemSearch
 
 
 function MusicItemSearch($artist, $listed)
