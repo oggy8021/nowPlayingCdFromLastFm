@@ -4,7 +4,7 @@
 	Plugin Name: nowPlayingCdFromLastfm
 	Plugin URI: http://oggy.no-ip.info/blog/
 	Description: Last.fm -> user.getRecentTracks
-	Version: 1.4
+	Version: 1.5
 	Author: oggy
 	Author URI: http://oggy.no-ip.info/blog/
  */
@@ -28,6 +28,7 @@ class WP_Widget_playingCd extends WP_Widget
 		$instance = wp_parse_args( (array) $instance, array( 'title' => 'nowPlayingCdFromLastfm', 'userid' => '', 'apikey' => '') );
 		$title = esc_attr( $instance['title'] );
 		$imagesize = apply_filters('widget_title', $instance['imagesize']);
+		$imagesize = esc_attr( $instance['imagesize'] );
 		$userid = get_option('widget_nowplayingcdfromlastfm_userid');
 		$apikey = get_option('widget_nowplayingcdfromlastfm_apikey');
 
@@ -61,7 +62,7 @@ class WP_Widget_playingCd extends WP_Widget
 				</select>
 			</p>
 		<?php
-	} //form
+	} //formge
 
 	function update( $new_instance, $old_instance ) {
 		$instance = $old_instance;
@@ -84,8 +85,8 @@ class WP_Widget_playingCd extends WP_Widget
 		if ( $title )
 			echo $before_title . $title . $after_title;
 
-//		$this->tracks = user_getRecentTracks($userid, $apikey);
-		$this->tracks = driver_getRecentTracks($userid, $apikey);
+		$this->tracks = user_getRecentTracks($userid, $apikey);
+//		$this->tracks = driver_getRecentTracks($userid, $apikey);
 
 		$album = $this->tracks[0]['album']['name'];
 		if ( '' != $this->tracks[0]['images']["$imagesize"] )
@@ -96,18 +97,12 @@ class WP_Widget_playingCd extends WP_Widget
 		}
 		$artist = $this->tracks[0]['artist']['name'];
 
-		if ( $getArtist = get_option('widget_' . $this->id_base .'RecentTrackArtist') ) {
-			update_option('widget_' . $this->id_base .'RecentTrackArtist', $artist);
-		} else {
-			add_option('widget_' . $this->id_base .'RecentTrackArtist', $artist);
-		}
+		$this->save_settings( saveRecentArtist($this->get_settings(), $title, $artist) );
 
-		$sets = $this->get_settings();
 		echo '<div id="nowPlayingCdFromLastfm">';
 		echo '<img src="' . $image . '" border="0" alt="' . $album . '" title="' . $album . '" />';
 		echo '<p>' . $artist . '</p>';
 		echo '<p>' . $album . '</p>';
-		echo '<p>[' . $getArtist . ']</p>';
 		echo '</div>';
 		echo $after_widget;
 
@@ -134,13 +129,6 @@ function driver_getRecentTracks( $userid, $apikey ) {
 	return $tracks;
 
 } // driver_getRecentTracks
-
-
-function driver_MusicItemSearch($artist, $listed)
-{
-	return "driver Code";
-
-} // driver_MusicItemSearch
 
 
 function user_getRecentTracks( $userid, $apikey ) {
@@ -173,6 +161,26 @@ function user_getRecentTracks( $userid, $apikey ) {
 } // user_getRecentTracks
 
 
+function saveRecentArtist( $settings, $title, $artist )
+{
+	foreach ($settings as $number => $instance) {
+		if ( isset( $instance['title'] ) ) {
+			if ( $instance['title'] == $title ) {
+				break;
+			}
+		}
+	}
+	if ( ! isset( $instance['artist']) ) {
+		$settings["$number"] += array("artist" => $artist);
+	} else {
+		$settings["$number"]['artist'] = $artist;
+	}
+
+	return $settings;
+
+} // saveRecentArtist
+
+
 class WP_Widget_recentReleaseCd extends WP_Widget
 {
 	function __construct() {
@@ -187,6 +195,23 @@ class WP_Widget_recentReleaseCd extends WP_Widget
 		$instance = wp_parse_args( (array) $instance, array( 'title' => 'recentReleaseCd', 'diskCount' => 1 ) );
 		$title = esc_attr( $instance['title'] );
 		$diskCount = esc_attr( $instance['diskCount'] );
+		$playingcd = apply_filters('widget_title', $instance['playingcd']);
+
+		$widgetList = wp_get_sidebars_widgets();
+		array_shift($widgetList);
+
+		$playingcds = array();
+		foreach($widgetList as $activeWidgets) {
+			foreach( $activeWidgets as $widgetId) {
+				$names = preg_split("/-/", $widgetId);
+				if ('playingcd' == $names[0]) {
+					$settings = get_option('widget_' . $names[0]);
+					$widgetTitle = $settings["$names[1]"]['title'];
+					$playingcds += array("$widgetTitle" => "$names[1]");
+				}
+			}
+		}
+
 		?>
 			<p>
 				<label for="<?php echo $this->get_field_id('title'); ?>">
@@ -212,6 +237,19 @@ class WP_Widget_recentReleaseCd extends WP_Widget
 					 class="widefat" />
 				<br />
 			</p>
+			<p>
+				<label for="<?php echo $this->get_field_id('playingcd'); ?>">
+					<?php _e('対応するウィジェット'); ?>
+				</label><BR />
+				<select id="<?php echo $this->get_field_id('playingcd'); ?>" name="<?php echo $this->get_field_name('playingcd'); ?>">
+					<?php 
+						foreach ($playingcds as $widgetTitle => $widgetId) {
+							$selected = ($widgetId == $playingcd) ? 'selected="selected"' : '';
+							echo '<option ' . $selected .' value="' . $widgetId . '">' . $widgetTitle . '</option>';
+						}
+					?>
+				</select>
+			</p>
 		<?php
 	} //form
 
@@ -219,6 +257,7 @@ class WP_Widget_recentReleaseCd extends WP_Widget
 		$instance = $old_instance;
 		$instance['title'] = strip_tags($new_instance['title']);
 		$instance['diskCount'] = strip_tags($new_instance['diskCount']);
+		$instance['playingcd'] = strip_tags($new_instance['playingcd']);
 		return $instance;
 	} //update
 
@@ -226,26 +265,39 @@ class WP_Widget_recentReleaseCd extends WP_Widget
 		extract( $args );
 		$title = apply_filters('widget_title', $instance['title']);
 		$diskCount = apply_filters('widget_title', $instance['diskCount']);
+		$playingcd = apply_filters('widget_title', $instance['playingcd']);
 
 		echo $before_widget;
 		if ( $title )
 			echo $before_title . $title . $after_title;
 
-//		if (! $artist = get_option('widget_' . $this->id_base .'RecentTrackArtist') ) {
-		if (! $artist = get_option('widget_playingcdRecentTrackArtist') ) {
+		if (! $settings = get_option('widget_playingcd') ) {
 			$artist = 'test artist';
+		} else {
+			$artist = $settings["$playingcd"]['artist'];
 		}
 
 		echo '<div id="recentRelease">';
-		echo '<p>' . $artist . '</p>';
-//		echo MusicItemSearch( $artist, $diskCount );
-		echo driver_MusicItemSearch( $artist, $diskCount );
+//		echo '<p>' . $artist . '</p>';
+		echo MusicItemSearch( $artist, $diskCount );
+//		echo driver_MusicItemSearch( $artist, $diskCount );
 		echo '</div>';
 
 		echo $after_widget;
 	} //widget
 
 } //WP_Widget_recentRelease
+
+
+function driver_MusicItemSearch($artist, $listed)
+{
+	if ('test artist' == $artist) {
+		return "driver Code";
+	} else {
+		return $artist . '-' . $listed;
+	}
+
+} // driver_MusicItemSearch
 
 
 function MusicItemSearch($artist, $listed)
