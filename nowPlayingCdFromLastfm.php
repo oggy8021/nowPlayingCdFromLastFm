@@ -277,6 +277,7 @@ function MusicItemSearch($artist, $listed)
 	$opt['Sort'] = '-releasedate';
 	$opt['SearchIndex'] = 'Music';
 	$opt['Artist'] = (String)$artist;
+	$opt['AssociateTag'] = 'frontpaoggy-22';
 	$res = $pas->item_search((String)$artist, $opt, AmazonPAS::LOCALE_JAPAN);	// AWSSDKforPHP
 
 	$getItems =& $res->body->Items->Item;
