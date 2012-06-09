@@ -4,13 +4,13 @@
 	Plugin Name: nowPlayingCdFromLastfm
 	Plugin URI: http://oggy.no-ip.info/blog/
 	Description: Last.fm -> user.getRecentTracks
-	Version: 1.5
+	Version: 1.6
 	Author: oggy
 	Author URI: http://oggy.no-ip.info/blog/
  */
 
-require_once 'AWSSDKforPHP/sdk.class.php';	// AWSSDKforPHP
-require_once( WP_PLUGIN_DIR . '/' . 'lastfmapi/lastfmapi.php');
+require_once('Services/Amazon.php');
+require_once( WP_PLUGIN_DIR . '/' . 'nowPlayingCd/lastfmapi/lastfmapi.php');
 
 class WP_Widget_playingCd extends WP_Widget
 {
@@ -84,7 +84,6 @@ class WP_Widget_playingCd extends WP_Widget
 			echo $before_title . $title . $after_title;
 
 		$this->tracks = user_getRecentTracks($userid, $apikey);
-//		$this->tracks = driver_getRecentTracks($userid, $apikey);
 
 		$album = $this->tracks[0]['album']['name'];
 		if ( '' != $this->tracks[0]['images']["$imagesize"] )
@@ -256,9 +255,7 @@ class WP_Widget_recentReleaseCd extends WP_Widget
 		}
 
 		echo '<div id="recentRelease">';
-//		echo '<p>' . $artist . '</p>';
 		echo MusicItemSearch( $artist, $diskCount );
-//		echo driver_MusicItemSearch( $artist, $diskCount );
 		echo '</div>';
 
 		echo $after_widget;
@@ -269,19 +266,22 @@ class WP_Widget_recentReleaseCd extends WP_Widget
 
 function MusicItemSearch($artist, $listed)
 {
+	$access_key = '';
+	$secret_key = '';
 	$noimgUrl = WP_PLUGIN_URL . '/nowPlayingCd/noimg.png';
 
-	$pas = new AmazonPAS();
-	$pas->set_locale(AmazonPAS::LOCALE_JAPAN);	// AWSSDKforPHP
+	$sa = new Services_Amazon($access_key, $secret_key);
+	$sa->setVersion('2011-08-11');
+	$sa->setLocale('JP');
+
+	$opt = array();
 	$opt['ResponseGroup'] = 'Images,ItemAttributes';
 	$opt['Sort'] = '-releasedate';
-	$opt['SearchIndex'] = 'Music';
 	$opt['Artist'] = (String)$artist;
 	$opt['AssociateTag'] = 'frontpaoggy-22';
-	$res = $pas->item_search((String)$artist, $opt, AmazonPAS::LOCALE_JAPAN);	// AWSSDKforPHP
+	$res = $sa->ItemSearch('Music', $opt);
 
-	$getItems =& $res->body->Items->Item;
-	$getItemCnt = count($getItems);
+	$getItemCnt = count($res['Item']);
 
 	if (0 === $getItemCnt) {
 		return '';
@@ -297,19 +297,14 @@ function MusicItemSearch($artist, $listed)
 	$MISresult = "";
 	for ($cnt = 0; $cnt <= ($lmax - 1); $cnt++)
 	{
-		$MISresult .= '<p><a href="' . $getItems[$cnt]->DetailPageURL . '" target="_blank">';
-
-		if ("" !=  $getItems[$cnt]->SmallImage->URL)
+		$MISresult .= '<p><a href="' . $res['Item'][$cnt]['DetailPageURL'] . '" target="_blank">';
+		if (array_key_exists('SmallImage', $res['Item'][$cnt]) and ("" !=  $res['Item'][$cnt]['SmallImage']['URL']))
 		{
-			$MISresult .= '<img src="' . $getItems[$cnt]->SmallImage->URL . '" class="aligncenter" alt="' . $getItems[$cnt]->ItemAttributes->Title . '" title="' . $getItems[$cnt]->ItemAttributes->Title . '" /><br />';
-
+			$MISresult .= '<img src="' . $res['Item'][$cnt]['SmallImage']['URL'] . '" class="aligncenter" alt="' . $res['Item'][$cnt]['ItemAttributes']['Title'] . '" title="' . $res['Item'][$cnt]['ItemAttributes']['Title'] . '" /><br/>';
 		} else {
-			$MISresult .= '<img src="' . $noimgUrl . '" class="aligncenter" width="75" height="75" /><br />';
-
+			$MISresult .= '<img src="' . $noimgUrl . '" class="aligncenter" width="75" height="75" /><br/>';
 		}
-
-		$MISresult .= $getItems[$cnt]->ItemAttributes->Title . '</a></p>' . "\n";
-
+		$MISresult .= $res['Item'][$cnt]['ItemAttributes']['Title'] . '</a></p>' . "\n";
 	}
 	return $MISresult;
 
