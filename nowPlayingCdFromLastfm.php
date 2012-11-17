@@ -278,7 +278,7 @@ function MusicItemSearch($artist, $listed)
 	$opt['ResponseGroup'] = 'Images,ItemAttributes';
 	$opt['Sort'] = '-releasedate';
 	$opt['Artist'] = (String)$artist;
-	$opt['AssociateTag'] = 'frontpaoggy-22';
+	$opt['AssociateTag'] = 'oggyblog-20';
 	$res = $sa->ItemSearch('Music', $opt);
 
 	$getItemCnt = count($res['Item']);
