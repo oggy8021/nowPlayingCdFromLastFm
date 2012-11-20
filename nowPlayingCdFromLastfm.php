@@ -4,7 +4,7 @@
 	Plugin Name: nowPlayingCdFromLastfm
 	Plugin URI: http://oggy.no-ip.info/blog/
 	Description: Last.fm -> user.getRecentTracks
-	Version: 1.6
+	Version: 1.7
 	Author: oggy
 	Author URI: http://oggy.no-ip.info/blog/
  */
@@ -243,6 +243,10 @@ class WP_Widget_recentReleaseCd extends WP_Widget
 		$title = apply_filters('widget_title', $instance['title']);
 		$diskCount = apply_filters('widget_title', $instance['diskCount']);
 		$playingcd = apply_filters('widget_title', $instance['playingcd']);
+		// 2012.11.20
+		$accesskey = get_option('widget_nowplayingcdfromlastfm_accesskey');
+		$secretkey = get_option('widget_nowplayingcdfromlastfm_secretkey');
+		$assoctag = get_option('widget_nowplayingcdfromlastfm_assoctag');
 
 		echo $before_widget;
 		if ( $title )
@@ -255,7 +259,7 @@ class WP_Widget_recentReleaseCd extends WP_Widget
 		}
 
 		echo '<div id="recentRelease">';
-		echo MusicItemSearch( $artist, $diskCount );
+		echo MusicItemSearch( $artist, $diskCount, $accesskey, $secretkey, $assoctag );
 		echo '</div>';
 
 		echo $after_widget;
@@ -264,10 +268,10 @@ class WP_Widget_recentReleaseCd extends WP_Widget
 } //WP_Widget_recentRelease
 
 
-function MusicItemSearch($artist, $listed)
+function MusicItemSearch($artist, $listed, $access_key, $secret_key, $assoctag)
 {
-	$access_key = '';
-	$secret_key = '';
+//	$access_key = '';
+//	$secret_key = '';
 	$noimgUrl = WP_PLUGIN_URL . '/nowPlayingCd/noimg.png';
 
 	$sa = new Services_Amazon($access_key, $secret_key);
@@ -278,7 +282,8 @@ function MusicItemSearch($artist, $listed)
 	$opt['ResponseGroup'] = 'Images,ItemAttributes';
 	$opt['Sort'] = '-releasedate';
 	$opt['Artist'] = (String)$artist;
-	$opt['AssociateTag'] = 'oggyblog-20';
+//	$opt['AssociateTag'] = 'oggyblog-20';
+	$opt['AssociateTag'] = $assoctag;
 	$res = $sa->ItemSearch('Music', $opt);
 
 	$getItemCnt = count($res['Item']);
@@ -320,11 +325,12 @@ function nowPlayingFromLastfm_options() {
 
 ?>
 <div class="wrap">
+	<div id="icon-options-general" class="icon32"><br /></div>
 	<h2>nowPlaying CD From Last.fm</h2>
 
 	<form method="post" action="options.php">
 		<?php wp_nonce_field('update-options'); ?>
-
+		<h3>Last.fm</h3>
 		<p>userid:
 			<input
 				 type="text"
@@ -340,8 +346,31 @@ function nowPlayingFromLastfm_options() {
 			<br />
 		</p>
 
+		<h3>Amazon</h3>
+		<p>access_key:
+			<input
+				 type="text"
+				 name="widget_nowplayingcdfromlastfm_accesskey"
+				 value="<?php echo get_option('widget_nowplayingcdfromlastfm_accesskey'); ?>" />
+			<br />
+		</p>
+		<p>secret_key:
+			<input
+				 type="text"
+				 name="widget_nowplayingcdfromlastfm_secretkey"
+				 value="<?php echo get_option('widget_nowplayingcdfromlastfm_secretkey') ?>" />
+			<br />
+		</p>
+		<p>AssociateTag:
+			<input
+				 type="text"
+				 name="widget_nowplayingcdfromlastfm_assoctag"
+				 value="<?php echo get_option('widget_nowplayingcdfromlastfm_assoctag') ?>" />
+			<br />
+		</p>
+
 		<input type="hidden" name="action" value="update" />
-		<input type="hidden" name="page_options" value="widget_nowplayingcdfromlastfm_userid,widget_nowplayingcdfromlastfm_apikey" />
+		<input type="hidden" name="page_options" value="widget_nowplayingcdfromlastfm_userid,widget_nowplayingcdfromlastfm_apikey,widget_nowplayingcdfromlastfm_accesskey,widget_nowplayingcdfromlastfm_secretkey,widget_nowplayingcdfromlastfm_assoctag" />
 
 	    <p class="submit">
 	    <input type="submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
