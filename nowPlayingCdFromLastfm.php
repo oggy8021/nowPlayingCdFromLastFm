@@ -10,7 +10,8 @@
  */
 
 require_once('Services/Amazon.php');
-require_once( WP_PLUGIN_DIR . '/' . 'nowPlayingCd/lastfmapi/lastfmapi.php');
+#require_once( WP_PLUGIN_DIR . '/' . 'nowPlayingCd/lastfmapi/lastfmapi.php');
+require_once('lastfmapi/lastfmapi.php');
 
 class WP_Widget_playingCd extends WP_Widget
 {
@@ -286,6 +287,10 @@ function MusicItemSearch($artist, $listed, $access_key, $secret_key, $assoctag)
 	$opt['AssociateTag'] = $assoctag;
 	$res = $sa->ItemSearch('Music', $opt);
 
+	if (is_array(gettype($res['Item'])) != FALSE and is_string(gettype($res['Item'])) != FALSE)
+	{
+		error_log(gettype($res['Item']) . "\n", 3, '/tmp/nowplaying289.log');
+	}
 	$getItemCnt = count($res['Item']);
 
 	if (0 === $getItemCnt) {
