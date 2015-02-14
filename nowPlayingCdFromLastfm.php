@@ -10,7 +10,6 @@
  */
 
 require_once('Services/Amazon.php');
-#require_once( WP_PLUGIN_DIR . '/' . 'nowPlayingCd/lastfmapi/lastfmapi.php');
 require_once('lastfmapi/lastfmapi.php');
 
 class WP_Widget_playingCd extends WP_Widget
@@ -271,8 +270,6 @@ class WP_Widget_recentReleaseCd extends WP_Widget
 
 function MusicItemSearch($artist, $listed, $access_key, $secret_key, $assoctag)
 {
-//	$access_key = '';
-//	$secret_key = '';
 	$noimgUrl = WP_PLUGIN_URL . '/nowPlayingCd/noimg.png';
 
 	$sa = new Services_Amazon($access_key, $secret_key);
@@ -283,7 +280,6 @@ function MusicItemSearch($artist, $listed, $access_key, $secret_key, $assoctag)
 	$opt['ResponseGroup'] = 'Images,ItemAttributes';
 	$opt['Sort'] = '-releasedate';
 	$opt['Artist'] = (String)$artist;
-//	$opt['AssociateTag'] = 'oggyblog-20';
 	$opt['AssociateTag'] = $assoctag;
 	$res = $sa->ItemSearch('Music', $opt);
 
